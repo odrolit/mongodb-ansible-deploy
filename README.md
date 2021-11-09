@@ -12,7 +12,7 @@ config server with 3-member replica set:
 - ipapi-mongo-config-2.mydomain.net
 - ipapi-mongo-config-3.mydomain.net
 
-mongos servers 3-member replica set:
+3 mongos servers:
 - ipapi-mongo-server-1.mydomain.net
 - ipapi-mongo-server-2.mydomain.net
 - ipapi-mongo-server-3.mydomain.net
