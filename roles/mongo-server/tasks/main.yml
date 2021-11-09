@@ -1,0 +1,42 @@
+---
+- name: copy mongos.service
+  copy:
+    src: files/mongos.service
+    dest: /var/lib/machines/{{ inventory_hostname }}/usr/lib/systemd/system/
+    backup: yes
+- name: create mongos.conf
+  template:
+    src: templates/mongos.conf
+    dest: /var/lib/machines/{{ inventory_hostname }}/etc/mongos.conf
+    backup: yes
+- name: systemctl disable mongod
+  shell:
+    cmd: machinectl shell {{ inventory_hostname }} /usr/bin/systemctl disable mongod
+    warn: no
+- name: systemctl stop mongod
+  shell:
+    cmd: machinectl shell {{ inventory_hostname }} /usr/bin/systemctl stop mongod
+    warn: no
+- name: systemctl enable mongos
+  shell:
+    cmd: machinectl shell {{ inventory_hostname }} /usr/bin/systemctl enable mongos
+    warn: no
+- name: systemctl start mongos
+  shell:
+    cmd: machinectl shell {{ inventory_hostname }} /usr/bin/systemctl start mongos
+    warn: no
+- name: create mongo.sh.addShard.js
+  template:
+    src: templates/mongo.sh.addShard.js
+    dest: /var/lib/machines/{{ inventory_hostname }}/root/
+    backup: yes
+- name: copy mongo.sh.enableSharding.js
+  copy:
+    src: files/mongo.sh.enableSharding.js
+    dest: /var/lib/machines/{{ inventory_hostname }}/root/
+    backup: yes
+- name: copy mongo.sh.shardCollection.js
+  copy:
+    src: files/mongo.sh.shardCollection.js
+    dest: /var/lib/machines/{{ inventory_hostname }}/root/
+    backup: yes

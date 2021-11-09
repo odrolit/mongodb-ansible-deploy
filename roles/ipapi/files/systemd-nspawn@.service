@@ -1,0 +1,63 @@
+#  SPDX-License-Identifier: LGPL-2.1+
+#
+#  This file is part of systemd.
+#
+#  systemd is free software; you can redistribute it and/or modify it
+#  under the terms of the GNU Lesser General Public License as published by
+#  the Free Software Foundation; either version 2.1 of the License, or
+#  (at your option) any later version.
+
+[Unit]
+Description=Container %i
+Documentation=man:systemd-nspawn(1)
+PartOf=machines.target
+Before=machines.target
+After=network.target systemd-resolved.service
+RequiresMountsFor=/var/lib/machines
+
+[Service]
+ExecStart=/usr/bin/systemd-nspawn --quiet --keep-unit --boot --link-journal=try-guest --network-veth --settings=override --machine=%i --capability=CAP_IPC_LOCK
+#above removed -U, ulimit -n did not work
+#above added capability, https://jira.mongodb.org/browse/SERVER-32773
+KillMode=mixed
+Type=notify
+RestartForceExitStatus=133
+SuccessExitStatus=133
+WatchdogSec=3min
+Slice=machine.slice
+Delegate=yes
+TasksMax=16384
+#below added for mongo
+# (file size)
+LimitFSIZE=infinity
+# (cpu time)
+LimitCPU=infinity
+# (virtual memory size)
+LimitAS=infinity
+# (locked-in-memory size)
+LimitMEMLOCK=infinity
+# (open files)
+LimitNOFILE=64000
+# (processes/threads)
+LimitNPROC=64000
+
+# Enforce a strict device policy, similar to the one nspawn configures when it
+# allocates its own scope unit. Make sure to keep these policies in sync if you
+# change them!
+DevicePolicy=closed
+DeviceAllow=/dev/net/tun rwm
+DeviceAllow=char-pts rw
+
+# nspawn itself needs access to /dev/loop-control and /dev/loop, to implement
+# the --image= option. Add these here, too.
+DeviceAllow=/dev/loop-control rw
+DeviceAllow=block-loop rw
+DeviceAllow=block-blkext rw
+
+# nspawn can set up LUKS encrypted loopback files, in which case it needs
+# access to /dev/mapper/control and the block devices /dev/mapper/*.
+DeviceAllow=/dev/mapper/control rw
+DeviceAllow=block-device-mapper rw
+
+[Install]
+WantedBy=machines.target

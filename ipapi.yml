@@ -1,0 +1,115 @@
+---
+- hosts: ipapi
+  roles:
+  - ipapi
+- hosts: nspawn
+  roles:
+  - nspawn
+- hosts: mongo
+  roles:
+  - mongo
+- hosts: mongo_config
+  roles:
+  - mongo-config
+- hosts: ipapi-mongo-config-1.mydomain.net
+  tasks:
+  - name: pausing for 10 seconds, however if next task fails, please run whole play again
+    pause:
+      seconds: 10
+  - name: mongo-config-1 - rs.status()
+    shell:
+      cmd: machinectl shell {{ inventory_hostname }} /usr/bin/mongo -u {{ mongo_user }} -p {{ mongo_password }} --tls --tlsCertificateKeyFile /etc/mongo.pemkey --tlsCAFile /etc/ca.pem ipapi-mongo-config-1.{{ my_domain }}.net:27019 /root/mongo.rs.status.js
+      warn: no
+    register: r_rsstatus
+  - name: mongo-config-1 - debug rs.status.stdout
+    debug:
+      msg: "{{ r_rsstatus.stdout }}"
+  - name: mongo-config-1 - rs.status() get ok
+    set_fact:
+      r_rsstatus_ok: "{{ r_rsstatus.stdout | regex_search(regexp, '\\1') | first }}"
+    vars:
+      regexp: '\"ok\" : ([0-9]+),'
+  - name: mongo-config-1 - rs.status() get codename
+    set_fact:
+      r_rsstatus_codename: "{{ r_rsstatus.stdout | regex_search(regexp, '\\1') | first }}"
+    vars:
+      regexp: '\"codeName\" : \"([^"]+)'
+    when: r_rsstatus_ok is match("0")
+  - name: mongo-config-1 - rs.initiate()
+    shell:
+      cmd: machinectl shell {{ inventory_hostname }} /usr/bin/mongo -u {{ mongo_user }} -p {{ mongo_password }} --tls --tlsCertificateKeyFile /etc/mongo.pemkey --tlsCAFile /etc/ca.pem ipapi-mongo-config-1.{{ my_domain }}.net:27019 /root/mongo.rs.initiate.js
+      warn: no
+    when: r_rsstatus_ok is match("0") and r_rsstatus_codename is match("NotYetInitialized")
+- hosts: mongo_shard
+  roles:
+  - mongo-shard
+- hosts: ipapi-mongo-shard[1-3]-1.mydomain.net
+  vars:
+    shard_number: "{{ inventory_hostname.split('-')[2][-1] }}"
+  tasks:
+  - name: mongo-shard[1-3] - debug shard_number
+    debug:
+      msg: "{{ shard_number }}"
+  - name: pausing for 10 seconds, however if next task fails, please run whole play again
+    pause:
+      seconds: 10
+  - name: mongo-shard[1-3] - rs.status()
+    shell:
+      cmd: machinectl shell {{ inventory_hostname }} /usr/bin/mongo -u {{ mongo_user }} -p {{ mongo_password }} --tls --tlsCertificateKeyFile /etc/mongo.pemkey --tlsCAFile /etc/ca.pem {{ inventory_hostname }}:2702{{ shard_number }} /root/mongo.rs.status.js
+      warn: no
+    register: r_rsstatus
+  - name: mongo-shard[1-3] - debug rs.status.stdout
+    debug:
+      msg: "{{ r_rsstatus.stdout }}"
+  - name: mongo-shard[1-3] - rs.status() get ok
+    set_fact:
+      r_rsstatus_ok: "{{ r_rsstatus.stdout | regex_search(regexp, '\\1') | first }}"
+    vars:
+      regexp: '\"ok\" : ([0-9]+)'
+  - name: mongo-shard[1-3] - debug r_rsstatus_ok
+    debug:
+      msg: "{{ r_rsstatus_ok }}"
+  - name: mongo-shard[1-3] - rs.status() get codename
+    set_fact:
+      r_rsstatus_codename: "{{ r_rsstatus.stdout | regex_search(regexp, '\\1') | first }}"
+    vars:
+      regexp: '\"codeName\" : \"([^"]+)'
+    when: r_rsstatus_ok is match("0")
+  - name: mongo-shard[1-3] - debug r_rsstatus_codename
+    debug:
+      msg: "{{ r_rsstatus_codename }}"
+    when: r_rsstatus_ok is match("0")
+  - name: mongo-shard[1-3] - rs.initiate()
+    shell:
+      cmd: machinectl shell {{ inventory_hostname }} /usr/bin/mongo -u {{ mongo_user }} -p {{ mongo_password }} --tls --tlsCertificateKeyFile /etc/mongo.pemkey --tlsCAFile /etc/ca.pem {{ inventory_hostname }}:2702{{ shard_number }} /root/mongo.rs.initiate.js
+      warn: no
+    when: r_rsstatus_ok is match("0") and r_rsstatus_codename is match("NotYetInitialized")
+- hosts: mongo_server
+  roles:
+  - mongo-server
+- hosts: ipapi-mongo-server-1.mydomain.net
+  tasks:
+  - name: mongo-server-1 - sh.addShard()
+    shell:
+      cmd: machinectl shell {{ inventory_hostname }} /usr/bin/mongo -u {{ mongo_user }} -p {{ mongo_password }} --tls --tlsCertificateKeyFile /etc/mongo.pemkey --tlsCAFile /etc/ca.pem {{ inventory_hostname }}:27017 /root/mongo.sh.addShard.js
+      warn: no
+    register: addShard
+  - name: mongo-server-1 - debug addShard
+    debug:
+      msg: "{{ addShard.stdout }}"
+  - name: mongo-server-1 - sh.enableSharding()
+    shell:
+      cmd: machinectl shell {{ inventory_hostname }} /usr/bin/mongo -u {{ mongo_user }} -p {{ mongo_password }} --tls --tlsCertificateKeyFile /etc/mongo.pemkey --tlsCAFile /etc/ca.pem {{ inventory_hostname }}:27017 /root/mongo.sh.enableSharding.js
+      warn: no
+    register: enableSharding
+  - name: mongo-server-1 - debug enableSharding
+    debug:
+      msg: "{{ enableSharding.stdout }}"
+  - name: mongo-server-1 - sh.shardCollection()
+    shell:
+      cmd: machinectl shell {{ inventory_hostname }} /usr/bin/mongo -u {{ mongo_user }} -p {{ mongo_password }} --tls --tlsCertificateKeyFile /etc/mongo.pemkey --tlsCAFile /etc/ca.pem {{ inventory_hostname }}:27017 /root/mongo.sh.shardCollection.js
+      warn: no
+    register: shardCollection
+  - name: mongo-server-1 - debug shardCollection
+    debug:
+      msg: "{{ shardCollection.stdout }}"

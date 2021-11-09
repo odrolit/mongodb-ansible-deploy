@@ -3,9 +3,9 @@ mongodb sharded cluster ansible deploy on debian 10 using nspawn containers
 
 ## overview
 
-Starting with 3 (virtual) fresh installed debian 10 servers with one IP address each.
+### starting with 3 (virtual) fresh installed debian 10 servers with one IP address each.
 
-Ending with mongodb sharded cluster with authorization and TLS/certificate protected communication and running on 15 nspawn containers:
+### ending with mongodb sharded cluster with authorization and TLS/certificate protected communication. Sharding is enabled on the example database and few collections are sharded. Cluster runs on 15 nspawn containers:
 
 config server with 3-member replica set:
 - ipapi-mongo-config-1.mydomain.net
@@ -28,4 +28,7 @@ config server with 3-member replica set:
 - ipapi-mongo-shard3-2.mydomain.net
 - ipapi-mongo-shard3-3.mydomain.net
 
-Sharding is enabled on the database and few example collections are sharded.
+
+
+## howto
+

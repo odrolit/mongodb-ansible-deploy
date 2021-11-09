@@ -1,0 +1,68 @@
+---
+- name: copy mongodb key
+  copy:
+    src: files/mongodb-server-4.4.asc
+    dest: /var/lib/machines/{{ inventory_hostname }}/root/
+- name: copy mongodb source list
+  copy:
+    src: files/mongodb-org-4.4.list
+    dest: /var/lib/machines/{{ inventory_hostname }}/etc/apt/sources.list.d/mongodb-org-4.4.list
+- name: apt-key add mongo key
+  shell:
+    cmd: machinectl shell {{ inventory_hostname }} /usr/bin/apt-key add /root/mongodb-server-4.4.asc
+    warn: no
+- name: apt-get update
+  shell:
+    cmd: machinectl shell {{ inventory_hostname }} /usr/bin/apt-get update
+    warn: no
+- name: install mongodb-org
+  shell:
+    cmd: machinectl shell {{ inventory_hostname }} /usr/bin/apt-get install -y -f mongodb-org
+    warn: no
+- name: systemctl daemon-reload
+  shell:
+    cmd: machinectl shell {{ inventory_hostname }} /usr/bin/systemctl daemon-reload
+    warn: no
+- name: systemctl enable mongod
+  shell:
+    cmd: machinectl shell {{ inventory_hostname }} /usr/bin/systemctl enable mongod
+    warn: no
+- name: copy mongo.pem
+  copy:
+    src: files/{{ inventory_hostname }}.pem
+    dest: /var/lib/machines/{{ inventory_hostname }}/root/mongo.pem
+    backup: yes
+- name: copy mongo.key
+  copy:
+    src: files/{{ inventory_hostname }}.key
+    dest: /var/lib/machines/{{ inventory_hostname }}/root/mongo.key
+    backup: yes
+- name: insert pem to mongo.pemkey
+  shell:
+    cmd: /usr/bin/cp /var/lib/machines/{{ inventory_hostname }}/root/mongo.pem /var/lib/machines/{{ inventory_hostname }}/etc/mongo.pemkey
+    warn: no
+- name: add key to mongo.pemkey
+  shell:
+    cmd: /usr/bin/cat /var/lib/machines/{{ inventory_hostname }}/root/mongo.key >> /var/lib/machines/{{ inventory_hostname }}/etc/mongo.pemkey
+    warn: no
+- name: chown mongo.pemkey
+  shell:
+    cmd: machinectl shell {{ inventory_hostname }} /usr/bin/chown mongodb.mongodb /etc/mongo.pemkey
+    warn: no
+- name: chmod mongo.pemkey
+  shell:
+    cmd: machinectl shell {{ inventory_hostname }} /usr/bin/chmod 440 /etc/mongo.pemkey
+    warn: no
+- name: copy ca.pem
+  copy:
+    src: files/ca.pem
+    dest: /var/lib/machines/{{ inventory_hostname }}/etc/
+    backup: yes
+- name: chown ca.pem
+  shell:
+    cmd: machinectl shell {{ inventory_hostname }} /usr/bin/chown 440 /etc/ca.pem
+    warn: no
+- name: chmod ca.pem
+  shell:
+    cmd: machinectl shell {{ inventory_hostname }} /usr/bin/chmod mongodb.mongodb /etc/ca.pem
+    warn: no

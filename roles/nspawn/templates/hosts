@@ -1,0 +1,22 @@
+127.0.0.1       localhost
+::1             localhost ip6-localhost ip6-loopback
+ff02::1         ip6-allnodes
+ff02::2         ip6-allrouters
+
+10.2.196.197 ipapi-mongo-config-1 ipapi-mongo-config-1.{{ my_domain }}.net
+10.2.196.197 ipapi-mongo-server-1 ipapi-mongo-server-1.{{ my_domain }}.net
+10.2.196.197 ipapi-mongo-shard1-1 ipapi-mongo-shard1-1.{{ my_domain }}.net
+10.2.196.197 ipapi-mongo-shard2-1 ipapi-mongo-shard2-1.{{ my_domain }}.net
+10.2.196.197 ipapi-mongo-shard3-1 ipapi-mongo-shard3-1.{{ my_domain }}.net
+
+10.2.196.217 ipapi-mongo-config-2 ipapi-mongo-config-2.{{ my_domain }}.net
+10.2.196.217 ipapi-mongo-server-2 ipapi-mongo-server-2.{{ my_domain }}.net
+10.2.196.217 ipapi-mongo-shard1-2 ipapi-mongo-shard1-2.{{ my_domain }}.net
+10.2.196.217 ipapi-mongo-shard2-2 ipapi-mongo-shard2-2.{{ my_domain }}.net
+10.2.196.217 ipapi-mongo-shard3-2 ipapi-mongo-shard3-2.{{ my_domain }}.net
+
+10.2.196.218 ipapi-mongo-config-3 ipapi-mongo-config-3.{{ my_domain }}.net
+10.2.196.218 ipapi-mongo-server-3 ipapi-mongo-server-3.{{ my_domain }}.net
+10.2.196.218 ipapi-mongo-shard1-3 ipapi-mongo-shard1-3.{{ my_domain }}.net
+10.2.196.218 ipapi-mongo-shard2-3 ipapi-mongo-shard2-3.{{ my_domain }}.net
+10.2.196.218 ipapi-mongo-shard3-3 ipapi-mongo-shard3-3.{{ my_domain }}.net

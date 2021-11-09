@@ -1,0 +1,40 @@
+[Match]
+Name=ens192
+
+[Network]
+{% set ip = ansible_facts['default_ipv4']['address'] %}
+{% if ansible_facts['default_ipv4']['netmask'] == '255.255.255.255' %}
+Address={{ ip }}/32
+{% elif ansible_facts['default_ipv4']['netmask'] == '255.255.255.254' %}
+Address={{ ip }}/31
+{% elif ansible_facts['default_ipv4']['netmask'] == '255.255.255.252' %}
+Address={{ ip }}/30
+{% elif ansible_facts['default_ipv4']['netmask'] == '255.255.255.248' %}
+Address={{ ip }}/29
+{% elif ansible_facts['default_ipv4']['netmask'] == '255.255.255.240' %}
+Address={{ ip }}/28
+{% elif ansible_facts['default_ipv4']['netmask'] == '255.255.255.224' %}
+Address={{ ip }}/27
+{% elif ansible_facts['default_ipv4']['netmask'] == '255.255.255.192' %}
+Address={{ ip }}/26
+{% elif ansible_facts['default_ipv4']['netmask'] == '255.255.255.128' %}
+Address={{ ip }}/25
+{% elif ansible_facts['default_ipv4']['netmask'] == '255.255.255.0' %}
+Address={{ ip }}/24
+{% elif ansible_facts['default_ipv4']['netmask'] == '255.255.254.0' %}
+Address={{ ip }}/23
+{% elif ansible_facts['default_ipv4']['netmask'] == '255.255.252.0' %}
+Address={{ ip }}/22
+{% elif ansible_facts['default_ipv4']['netmask'] == '255.255.248.0' %}
+Address={{ ip }}/21
+{% elif ansible_facts['default_ipv4']['netmask'] == '255.255.240.0' %}
+Address={{ ip }}/20
+{% elif ansible_facts['default_ipv4']['netmask'] == '255.255.224.0' %}
+Address={{ ip }}/19
+{% elif ansible_facts['default_ipv4']['netmask'] == '255.255.192.0' %}
+Address={{ ip }}/18
+{% else %}
+reallybignetwork/fixme
+{% endif %}
+Gateway={{ ansible_facts['default_ipv4']['gateway'] }}
+DNS=8.8.8.8 1.1.1.1

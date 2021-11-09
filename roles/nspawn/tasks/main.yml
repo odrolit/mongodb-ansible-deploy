@@ -1,0 +1,58 @@
+---
+- name: containers - check if exists
+  stat:
+    path: /var/lib/machines/{{inventory_hostname}}
+  register: r_subvolume
+- name: containers - create subvolumes
+  command: btrfs subvolume create /var/lib/machines/{{ inventory_hostname }}
+  when: not r_subvolume.stat.exists
+- name: containers - create bootstrap
+  command: debootstrap --arch=amd64 --include={{ nspawn_include }} buster /var/lib/machines/{{ inventory_hostname }}
+  when: not r_subvolume.stat.exists
+- name: containers - create hostname
+  template:
+    src: templates/hostname
+    dest: /var/lib/machines/{{ inventory_hostname }}/etc/
+  when: not r_subvolume.stat.exists
+- name: containers - create hosts
+  template:
+    src: templates/hosts
+    dest: /var/lib/machines/{{ inventory_hostname }}/etc/
+    backup: yes
+  when: not r_subvolume.stat.exists
+- name: containers - copy .bashrc
+  copy:
+    src: files/.bashrc
+    dest: /var/lib/machines/{{ inventory_hostname }}/root/
+  when: not r_subvolume.stat.exists
+- name: create directory /etc/systemd/nspawn
+  file:
+    path: /etc/systemd/nspawn
+    state: directory
+- name: containers - create nspawn config
+  copy:
+    src: files/container-name.nspawn
+    dest: /etc/systemd/nspawn/{{ inventory_hostname }}.nspawn
+  when: not r_subvolume.stat.exists
+- name: containers - enable
+  command:
+    cmd: machinectl enable {{ inventory_hostname }}
+    warn: no
+  when: not r_subvolume.stat.exists
+- name: containers - start
+  command:
+    cmd: machinectl start {{ inventory_hostname }}
+    warn: no
+  when: not r_subvolume.stat.exists
+
+#- name: containers - poweroff
+  #command:
+    #cmd: machinectl poweroff {{ inventory_hostname }}
+    #warn: no
+#- name: containers - create snapshot
+  #command:
+    #cmd: btrfs subvolume snapshot -r /var/lib/machines/{{ inventory_hostname }} /var/lib/backup/{{ inventory_hostname }}_init
+#- name: containers - start
+  #command:
+    #cmd: machinectl start {{ inventory_hostname }}
+    #warn: no

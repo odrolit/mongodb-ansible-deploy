@@ -1,0 +1,3 @@
+printjson(
+  sh.enableSharding("ipapi")
+)

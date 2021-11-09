@@ -1,0 +1,41 @@
+---
+- name: create mongo.rs.initiate.js
+  template:
+    src: templates/mongo.rs.initiate.js
+    dest: /var/lib/machines/{{ inventory_hostname }}/root/
+    backup: yes
+- name: copy mongo.rs.status.js
+  copy:
+    src: files/mongo.rs.status.js
+    dest: /var/lib/machines/{{ inventory_hostname }}/root/
+    backup: yes
+- name: copy mongod-noauthentication.conf
+  copy:
+    src: files/mongod-noauthentication.conf
+    dest: /var/lib/machines/{{ inventory_hostname }}/etc/mongod.conf
+    backup: yes
+- name: systemctl start mongod
+  shell:
+    cmd: machinectl shell {{ inventory_hostname }} /usr/bin/systemctl start mongod
+    warn: no
+- name: create db.createUser.js
+  template:
+    src: templates/mongo.db.createUser.js
+    dest: /var/lib/machines/{{ inventory_hostname }}/root/
+- name: db.createUser.js()
+  shell:
+    cmd: machinectl shell {{ inventory_hostname }} /usr/bin/mongo 127.0.0.1:27017 /root/mongo.db.createUser.js
+    warn: no
+  register: r_dbcreateuser
+- name: debug db.createUser.js.stdout
+  debug:
+    msg: "{{ r_dbcreateuser.stdout }}"
+- name: create mongod.conf
+  template:
+    src: templates/mongod.conf
+    dest: /var/lib/machines/{{ inventory_hostname }}/etc/mongod.conf
+    backup: yes
+- name: systemctl restart mongod
+  shell:
+    cmd: machinectl shell {{ inventory_hostname }} /usr/bin/systemctl restart mongod
+    warn: no

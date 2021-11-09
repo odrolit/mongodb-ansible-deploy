@@ -1,0 +1,63 @@
+---
+- name: ipapi - apt install systemd-container, debootstrap
+  apt:
+    name: systemd-container, debootstrap
+- name: ipapi - check /etc/network/interfaces
+  stat:
+    path: /etc/network/interfaces
+  register: r_network_interfaces
+- name: ipapi - move /etc/network/interfaces
+  command: mv /etc/network/interfaces /etc/network/interfaces.save
+  when: r_network_interfaces.stat.exists
+- name: ipapi - enable systemd-networkd
+  systemd:
+    name: systemd-networkd
+    enabled: yes
+  register: r_networkd
+- name: ipapi - create config in /etc/systemd/network/
+  template:
+    src: templates/{{ item }}
+    dest: /etc/systemd/network/
+  with_items:
+  - ens192.network
+  - ens224.network
+- name: ipapi - disable networking
+  systemd:
+    name: networking
+    enabled: no
+  register: r_networking
+- name: ipapi - adjust ntp service
+  copy:
+    src: files/timesyncd.conf
+    dest: /etc/systemd/
+    backup: yes
+- name: ipapi - create service to disable transparent hugepage (mongo)
+  copy:
+    src: files/disable-transparent-huge-pages.service
+    dest: /etc/systemd/system/
+    backup: yes
+- name: ipapi - enable and start service transparent hugepage (mongo)
+  systemd:
+    name: disable-transparent-huge-pages
+    daemon_reload: yes
+    enabled: yes
+    state: started
+- name: ipapi - adjust limits for containers (mongo)
+  copy:
+    src: files/systemd-nspawn@.service
+    dest: /usr/lib/systemd/system/
+    backup: yes
+- name: ipapi - check /var/lib/backup
+  stat:
+    path: /var/lib/backup
+  register: r_backup
+- name: ipapi - create /var/lib/backup
+  command: btrfs subvolume create /var/lib/backup
+  when: not r_backup.stat.exists
+- name: ipapi - reboot if networking changed to networkd
+  reboot:
+  when:
+  - r_networkd.changed
+  - r_networking.changed
+  - r_networkd.enabled
+  - not r_networking.enabled
