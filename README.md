@@ -27,4 +27,5 @@ mongos servers 3-member replica set:
 - ipapi-mongo-shard3-1.mydomain.net
 - ipapi-mongo-shard3-2.mydomain.net
 - ipapi-mongo-shard3-3.mydomain.net
+
 Sharding is enabled on the database and few example collections are sharded.
