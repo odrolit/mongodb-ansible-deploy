@@ -1,5 +1,5 @@
 # mongodb-ansible-deploy
-mongodb sharded cluster ansible deploy on debian 10 using nspawn containers
+mongodb 4.4 sharded cluster ansible deploy on debian 10 using nspawn containers
 
 ## overview
 
