@@ -5,7 +5,7 @@ mongodb sharded cluster ansible deploy on debian 10 using nspawn containers
 
 ### starting with 3 (virtual) fresh installed debian 10 servers with one IP address each.
 
-### ending with mongodb sharded cluster with authorization and TLS/certificate protected communication. Sharding is enabled on the example database and few collections are sharded. Cluster runs on 15 nspawn containers:
+### ending with mongodb sharded cluster with authorization and TLS/certificate* protected communication. Sharding is enabled on the example database and few collections are sharded. Cluster runs on 15 nspawn containers:
 
 config server with 3-member replica set:
 - ipapi-mongo-config-1.mydomain.net
@@ -29,6 +29,22 @@ config server with 3-member replica set:
 - ipapi-mongo-shard3-3.mydomain.net
 
 
+*certificates are not included
+
 
 ## howto
 
+### change mydomain , you can use these scripts from project folder:
+find . -type f -exec sed -i 's/mydomain/newdomain/g' {} +
+cd roles/mongo/files/
+  for i in ipapi-mongo-*; do a=$(echo $i | awk -F '.' '{print $1}'); c=$(echo $i | awk -F '.' '{print $3}'); d=$(echo $i | awk -F '.' '{print $4}'); mv $i "$a.newdomain.$c.$d"; done
+cd ../../../
+
+### change hosts, NTP and DNS settings in these files:
+- inventory.yml
+- roles/ipapi/files/timesyncd.conf
+- roles/ipapi/templates/ens192.network
+
+### insert certficates and keys to all .key and .pem files in roles/mongo/files/ directory
+
+### run the playbook
