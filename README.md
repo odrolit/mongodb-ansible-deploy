@@ -52,7 +52,7 @@ cd roles/mongo/files/
 
 ### insert certficates and keys to all .key and .pem files in roles/mongo/files/ directory
 
-### run the playbook
+### run the playbook and enjoy :)
 <pre>
 ansible-playbook -i inventory.yml ipapi.yml
 </pre>
