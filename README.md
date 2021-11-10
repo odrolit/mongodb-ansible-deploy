@@ -35,10 +35,12 @@ config server with 3-member replica set:
 ## howto
 
 ### change mydomain , you can use these scripts from project folder:
+<pre>
 find . -type f -exec sed -i 's/mydomain/newdomain/g' {} +
 cd roles/mongo/files/
-  for i in ipapi-mongo-*; do a=$(echo $i | awk -F '.' '{print $1}'); c=$(echo $i | awk -F '.' '{print $3}'); d=$(echo $i | awk -F '.' '{print $4}'); mv $i "$a.newdomain.$c.$d"; done
-cd ../../../
+   for i in ipapi-mongo-*; do a=$(echo $i | awk -F '.' '{print $1}'); c=$(echo $i | awk -F '.' '{print $3}'); d=$(echo $i | awk -F '.' '{print $4}'); mv $i "$a.newdomain.$c.$d"; done
+ cd ../../../
+</pre>
 
 ### change hosts, NTP and DNS settings in these files:
 - inventory.yml
@@ -48,3 +50,6 @@ cd ../../../
 ### insert certficates and keys to all .key and .pem files in roles/mongo/files/ directory
 
 ### run the playbook
+<pre>
+ansible-playbook -i inventory.yml ipapi.yml
+</pre>
